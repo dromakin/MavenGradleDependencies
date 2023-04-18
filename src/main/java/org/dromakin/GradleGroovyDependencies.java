@@ -1,5 +1,5 @@
 /*
- * File:     GroovyDependencies
+ * File:     GradleGroovyDependencies
  * Package:  org.dromakin
  * Project:  RegExpDependencies
  *
@@ -30,22 +30,22 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GroovyDependencies {
+public class GradleGroovyDependencies {
 
-    private static final Logger logger = LogManager.getLogger(GroovyDependencies.class);
+    private static final Logger logger = LogManager.getLogger(GradleGroovyDependencies.class);
 
-    private Path buildFileGroovy;
+    private Path buildFile;
 
     private static final String tagName = "dependencies";
     private static final Pattern dependencyPatternGNV = java.util.regex.Pattern.compile("\\s*(\\w+)\\s+(.+)");
     private static final Pattern dependencyPatternNoGNV = Pattern.compile("\\s*(\\w*)\\s*\\(?'?\"?([a-zA-Z0-9.\\-:]+)'?\"?\\)?");
-    private static final Pattern dependencyGroupPatternFirst = Pattern.compile("([a-zA-Z0-9.-]+):([a-zA-Z0-9.-]+):([a-zA-Z0-9.-]+)");
-    private static final Pattern dependencyGroupPatternSecond = Pattern.compile("group:\\s*'([a-zA-Z0-9.-]+)',\\s*name:\\s*'([a-zA-Z0-9.-]+)',\\s*version:\\s*'([a-zA-Z0-9.-]+)'");
+    private static final Pattern dependencyGroupPatternFirst = Pattern.compile("([a-zA-Z0-9.\\-]+):([a-zA-Z0-9.\\-]+):([a-zA-Z0-9.\\-]+)");
+    private static final Pattern dependencyGroupPatternSecond = Pattern.compile("group:\\s*'([a-zA-Z0-9.\\-]+)',\\s*name:\\s*'([a-zA-Z0-9.\\-]+)',\\s*version:\\s*'([a-zA-Z0-9.\\-]+)'");
 
-    public List<Dependency> getGroovyDependencies() {
+    public List<Dependency> getDependencies() {
         List<Dependency> dependencies = new ArrayList<>();
 
-        try (BufferedReader reader = Files.newBufferedReader(buildFileGroovy)) {
+        try (BufferedReader reader = Files.newBufferedReader(buildFile)) {
             boolean inTagBlock = false;
             String line;
 
@@ -61,6 +61,9 @@ public class GroovyDependencies {
                 if (inTagBlock) {
 
                     if (line.startsWith("implementation") || line.startsWith("compile") || line.startsWith("testCompile") || line.startsWith("testRuntime") || line.startsWith("runtimeOnly") || line.startsWith("testImplementation") || line.startsWith("testRuntimeOnly")) {
+
+                        // comments processing
+                        line = line.split("//")[0].trim();
 
                         Matcher matcher;
                         Matcher matcherPostProcess;

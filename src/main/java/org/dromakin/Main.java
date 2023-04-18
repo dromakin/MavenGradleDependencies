@@ -13,8 +13,9 @@ public class Main {
     public static void main(String[] args) throws URISyntaxException {
         URL res = Main.class.getClassLoader().getResource("build.gradle");
         // gradle
-        GroovyDependencies groovyDependencies = new GroovyDependencies(Paths.get(res.toURI()));
-        groovyDependencies.getGroovyDependencies().forEach(logger::info);
+        GradleGroovyDependencies gradleGroovyDependencies = new GradleGroovyDependencies(Paths.get(res.toURI()));
+        gradleGroovyDependencies.getDependencies().forEach(logger::info);
+        // kotlin
 
     }
 
