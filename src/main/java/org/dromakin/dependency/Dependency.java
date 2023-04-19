@@ -10,7 +10,7 @@
  * version - 2023.04.18
  * copyright - ORGANIZATION_NAME Inc. 2023
  */
-package org.dromakin;
+package org.dromakin.dependency;
 
 import lombok.AccessLevel;
 import lombok.Builder;

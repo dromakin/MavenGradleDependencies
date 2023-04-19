@@ -10,7 +10,9 @@
  * version - 2023.04.19
  * copyright - ORGANIZATION_NAME Inc. 2023
  */
-package org.dromakin;
+package org.dromakin.project;
+
+import org.dromakin.dependency.Dependency;
 
 import java.util.List;
 

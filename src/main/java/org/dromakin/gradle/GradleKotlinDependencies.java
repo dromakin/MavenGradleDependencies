@@ -1,5 +1,5 @@
 /*
- * File:     GradleGroovyDependencies
+ * File:     GradleKotlinDependencies
  * Package:  org.dromakin
  * Project:  RegExpDependencies
  *
@@ -10,7 +10,7 @@
  * version - 2023.04.18
  * copyright - ORGANIZATION_NAME Inc. 2023
  */
-package org.dromakin;
+package org.dromakin.gradle;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +18,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dromakin.dependency.Dependency;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,48 +32,60 @@ import java.util.regex.Matcher;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GradleGroovyDependencies extends GradleDependencies {
+public class GradleKotlinDependencies extends GradleDependencies {
 
-    private static final Logger logger = LogManager.getLogger(GradleGroovyDependencies.class);
+    private static final Logger logger = LogManager.getLogger(GradleKotlinDependencies.class);
 
     private Path buildFile;
 
-    @Override
+    private boolean lineStarts(String line) {
+        return line.startsWith("implementation") || line.startsWith("compile") || line.startsWith("api") || line.startsWith("runtimeOnly") || line.startsWith("compileOnly") || line.startsWith("provided") || line.startsWith("testImplementation") || line.startsWith("testCompile") || line.startsWith("testRuntime") || line.startsWith("testApi") || line.startsWith("testRuntimeOnly");
+    }
+
     public List<Dependency> getDependencies() {
         List<Dependency> dependencies = new ArrayList<>();
 
         try (BufferedReader reader = Files.newBufferedReader(buildFile)) {
             boolean inTagBlock = false;
+            int countTagBlockClosed = 0;
+            int countTagBlockOpened = 0;
             String line;
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
 
+                if (line.contains("//")) {
+                    line = line.split("//").length > 0 ? line.split("//")[0].trim() : line.trim();
+                }
+
+                if (line.contains("{")) {
+                    countTagBlockOpened++;
+                }
+
                 if (line.startsWith(tagName + " {")) {
                     inTagBlock = true;
+                    countTagBlockOpened++;
+
                 } else if (line.equals("}")) {
+                    countTagBlockClosed++;
+                }
+
+                if (countTagBlockClosed == countTagBlockOpened && countTagBlockClosed > 0) {
                     inTagBlock = false;
+                    countTagBlockClosed = 0;
+                    countTagBlockOpened = 0;
                 }
 
                 if (inTagBlock) {
 
-                    if (line.startsWith("implementation") || line.startsWith("compile") || line.startsWith("testCompile") || line.startsWith("testRuntime") || line.startsWith("runtimeOnly") || line.startsWith("testImplementation") || line.startsWith("testRuntimeOnly")) {
+                    if (lineStarts(line)) {
 
                         // comments processing
                         line = line.split("//")[0].trim();
 
-                        Matcher matcher;
                         Matcher matcherPostProcess;
 
-                        if (line.contains("group") && line.contains("name") && line.contains("version")) {
-
-                            matcher = dependencyGroovyPatternGNV.matcher(line);
-
-                        } else {
-
-                            matcher = dependencyGroovyPatternNoGNV.matcher(line);
-
-                        }
+                        Matcher matcher = dependencyKotlinPattern.matcher(line);
 
                         if (matcher.matches()) {
 
@@ -86,11 +99,15 @@ public class GradleGroovyDependencies extends GradleDependencies {
 
                             if (preprocessingStr.contains("group") && preprocessingStr.contains("name") && preprocessingStr.contains("version")) {
 
-                                matcherPostProcess = dependencyGroovyGroupPatternSecond.matcher(preprocessingStr);
+                                matcherPostProcess = dependencyKotlinGroupPatternSecond.matcher(preprocessingStr);
+
+                            } else if (preprocessingStr.contains(",")) {
+
+                                matcherPostProcess = dependencyKotlinGroupPatternThird.matcher(preprocessingStr);
 
                             } else {
 
-                                matcherPostProcess = dependencyGroovyGroupPatternFirst.matcher(preprocessingStr);
+                                matcherPostProcess = dependencyKotlinGroupPatternFirst.matcher(preprocessingStr);
 
                             }
 

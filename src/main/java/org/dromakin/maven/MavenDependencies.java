@@ -10,7 +10,7 @@
  * version - 2023.04.19
  * copyright - ORGANIZATION_NAME Inc. 2023
  */
-package org.dromakin;
+package org.dromakin.maven;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +21,8 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.dromakin.project.ProjectDependencies;
+import org.dromakin.dependency.Dependency;
 
 import java.io.IOException;
 import java.nio.file.Files;

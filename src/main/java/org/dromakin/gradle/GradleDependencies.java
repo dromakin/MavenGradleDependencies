@@ -10,10 +10,12 @@
  * version - 2023.04.18
  * copyright - ORGANIZATION_NAME Inc. 2023
  */
-package org.dromakin;
+package org.dromakin.gradle;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dromakin.dependency.Dependency;
+import org.dromakin.project.ProjectDependencies;
 
 import java.util.List;
 import java.util.regex.Matcher;

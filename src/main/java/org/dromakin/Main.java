@@ -2,6 +2,10 @@ package org.dromakin;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dromakin.gradle.GradleGroovyDependencies;
+import org.dromakin.gradle.GradleKotlinDependencies;
+import org.dromakin.maven.MavenDependencies;
+import org.dromakin.project.ProjectDependencies;
 
 import java.net.URISyntaxException;
 import java.net.URL;
