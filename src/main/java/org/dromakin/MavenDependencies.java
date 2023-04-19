@@ -20,11 +20,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 @AllArgsConstructor
@@ -34,10 +36,13 @@ public class MavenDependencies implements ProjectDependencies {
 
     private static final Logger logger = LogManager.getLogger(MavenDependencies.class);
 
+    private static final String DEFAULT_SCOPE = "compile";
+
     private Path buildFile;
 
     @Override
     public List<Dependency> getDependencies() {
+        List<Dependency> dependencies = new ArrayList<>();
 
         MavenXpp3Reader reader = new MavenXpp3Reader();
         try {
@@ -46,38 +51,63 @@ public class MavenDependencies implements ProjectDependencies {
             // Get the parent POM
             Parent parent = model.getParent();
             if (parent != null) {
-                System.out.println("Parent POM:");
-                System.out.println("GroupId: " + parent.getGroupId());
-                System.out.println("ArtifactId: " + parent.getArtifactId());
-                System.out.println("Version: " + parent.getVersion());
-                System.out.println();
+                String groupId = parent.getGroupId();
+                String artifactId = parent.getArtifactId();
+                String version = parent.getVersion();
+
+                Dependency dependency = Dependency.builder()
+                        .group(groupId)
+                        .name(artifactId)
+                        .version(version)
+                        .configuration(DEFAULT_SCOPE)
+                        .build();
+
+                dependencies.add(dependency);
             }
 
             // Get the properties
             Properties properties = model.getProperties();
 
-            // Print the properties
-            System.out.println("Properties:");
-            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-                String propertyString = entry.getKey() + "=" + entry.getValue();
-                System.out.println(propertyString);
-            }
-
             // Get the list of dependencies
-            List<org.apache.maven.model.Dependency> dependencies = model.getDependencies();
+            for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
+                String groupId = dependency.getGroupId();
+                String artifactId = dependency.getArtifactId();
+                String version = dependency.getVersion();
+                String configuration = dependency.getScope();
 
-            // Print the list of dependencies
-            System.out.println("Dependencies:");
-            for (org.apache.maven.model.Dependency dependency : dependencies) {
-                String dependencyString = dependency.getGroupId() + ":" + dependency.getArtifactId()
-                        + ":" + dependency.getVersion() + ":" + dependency.getScope();
-                System.out.println(dependencyString);
+                if (version != null) {
+                    if (version.startsWith("${") && version.endsWith("}")) {
+                        String propertyName = version.substring(2, version.length() - 1);
+                        String propertyValue = properties.getProperty(propertyName);
+                        if (propertyValue != null) {
+                            version = propertyValue;
+                        }
+                    }
+
+                } else {
+                    if (parent != null) {
+                        version = parent.getVersion();
+                    }
+                }
+
+                if (configuration == null) {
+                    configuration = DEFAULT_SCOPE;
+                }
+
+                dependencies.add(
+                        Dependency.builder()
+                                .group(groupId)
+                                .name(artifactId)
+                                .version(version)
+                                .configuration(configuration)
+                                .build()
+                );
             }
 
-        } catch (Exception e) {
-            System.err.println("Failed to read pom.xml: " + e.getMessage());
+        } catch (XmlPullParserException | IOException e) {
+            throw new RuntimeException(e);
         }
 
-        return null;
+        return dependencies;
     }
 }

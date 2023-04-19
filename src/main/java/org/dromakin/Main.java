@@ -13,13 +13,20 @@ public class Main {
     public static void main(String[] args) throws URISyntaxException {
         URL buildGradle = Main.class.getClassLoader().getResource("build.gradle");
         URL buildGradleKotlin = Main.class.getClassLoader().getResource("build.gradle.kts");
+        URL buildMaven = Main.class.getClassLoader().getResource("pom.xml");
         // gradle 9
-        GradleDependencies gradleDependencies = new GradleGroovyDependencies(Paths.get(buildGradle.toURI()));
-        gradleDependencies.getDependencies().forEach(logger::info);
+        ProjectDependencies projectDependencies = new GradleGroovyDependencies(Paths.get(buildGradle.toURI()));
+        logger.info(projectDependencies.getDependencies().size());
+//        projectDependencies.getDependencies().forEach(logger::info);
         // kotlin 24
-        gradleDependencies = new GradleKotlinDependencies(Paths.get(buildGradleKotlin.toURI()));
-        gradleDependencies.getDependencies().forEach(logger::info);
-//        System.out.println(gradleDependencies.getDependencies().size());
+//        projectDependencies = new GradleKotlinDependencies(Paths.get(buildGradleKotlin.toURI()));
+//        logger.info(projectDependencies.getDependencies().size());
+//        projectDependencies.getDependencies().forEach(logger::info);
+
+        projectDependencies = new MavenDependencies(Paths.get(buildMaven.toURI()));
+        logger.info(projectDependencies.getDependencies().size());
+        projectDependencies.getDependencies().forEach(logger::info);
+
     }
 
 

@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class GradleDependencies {
+public abstract class GradleDependencies implements ProjectDependencies {
 
     private static final Logger logger = LogManager.getLogger(GradleDependencies.class);
 
